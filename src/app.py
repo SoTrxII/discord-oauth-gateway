@@ -40,10 +40,10 @@ def make_session(token=None, state=None, scope=None):
 
 @app.route('/')
 def index():
-    print("MEH")
     scope = request.args.get(
         'scope',
         'identify email guilds')
+    session['callback'] = request.args.get('callback')
     discord = make_session(scope=scope.split(' '))
     authorization_url, state = discord.authorization_url(AUTHORIZATION_BASE_URL)
     session['oauth2_state'] = state
@@ -60,7 +60,12 @@ def callback():
         client_secret=OAUTH2_CLIENT_SECRET,
         authorization_response=request.url)
     session['oauth2_token'] = token
-    return redirect(url_for('.me'))
+    if(session["callback"]):
+        return redirect(session["callback"])
+    else:
+        return redirect(url_for('.me'))
+     
+
 
 
 @app.route('/me')
