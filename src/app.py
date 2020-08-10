@@ -73,13 +73,13 @@ def me():
     discord = make_session(token=session.get('oauth2_token'))
     user = discord.get(API_BASE_URL + '/users/@me')
     if(user.status_code != 200):
-        return jsonify(user.json()), user.status_code
+        return (jsonify(user.json()), user.status_code)
     user = user.json()
     guilds = discord.get(API_BASE_URL + '/users/@me/guilds')
     if(guilds.status_code != 200):
-        return jsonify(guilds.json()), guilds.status_code
+        return (jsonify(guilds.json()), guilds.status_code)
     guilds = guilds.json()
-    return jsonify(user=user, guilds=guilds), 
+    return jsonify(user=user, guilds=guilds)
 
 
 if __name__ == '__main__':
