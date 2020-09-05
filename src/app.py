@@ -43,7 +43,13 @@ def index():
     scope = request.args.get(
         'scope',
         'identify email guilds')
-    session['callback'] = request.args.get('callback')
+    if 'HTTP_ORIGIN' in request.environ:
+        print(request.environ.get("HTTP_ORIGIN"))
+    
+    session['callback'] = request.args.get('callback') 
+    if 'HTTP_ORIGIN' in request.environ and not session.get('callback'):
+        session['callback'] = request.environ.get("HTTP_ORIGIN")
+
     discord = make_session(scope=scope.split(' '))
     authorization_url, state = discord.authorization_url(AUTHORIZATION_BASE_URL)
     session['oauth2_state'] = state
@@ -60,7 +66,7 @@ def callback():
         client_secret=OAUTH2_CLIENT_SECRET,
         authorization_response=request.url)
     session['oauth2_token'] = token
-    if(session["callback"]):
+    if("callback" in session):
         return redirect(session["callback"])
     else:
         return redirect(url_for('.me'))
