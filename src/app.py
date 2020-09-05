@@ -69,7 +69,7 @@ def callback():
     if("callback" in session):
         return redirect(session["callback"])
     else:
-        return redirect(url_for('.me'))
+        return redirect('https://dispos.pocot.fr')
      
 
 
