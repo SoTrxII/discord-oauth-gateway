@@ -16,9 +16,10 @@ Share a single discord authentification across a single/multiple domain name usi
 
 ## Running it
 ```sh
+# You can also pull the package instead of building it.
 docker build -t discord-oauth .
 docker run -it \
-# Create a discord application to obtain these
+# Create a discord application to obtain these.
 -e OAUTH2_CLIENT_ID=<DISCORD_CLIENT_ID>
 -e OAUTH2_CLIENT_SECRET=<DISCORD_CLIENT_SECRET>
 # Replace <HOSTED_URL> with the url of this service. (Ex:  gtw.domain.net)  
