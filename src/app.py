@@ -1,6 +1,7 @@
 import os
 from flask import Flask, g, session, redirect, request, url_for, jsonify
 from requests_oauthlib import OAuth2Session
+from base64 import b64encode, b64decode
 
 OAUTH2_CLIENT_ID = os.environ['OAUTH2_CLIENT_ID']
 OAUTH2_CLIENT_SECRET = os.environ['OAUTH2_CLIENT_SECRET']
@@ -43,36 +44,35 @@ def index():
     scope = request.args.get(
         'scope',
         'identify email guilds')
-    if 'HTTP_ORIGIN' in request.environ:
-        print(request.environ.get("HTTP_ORIGIN"))
-    
+    origin = request.environ.get("HTTP_ORIGIN") or "localhost"
+    print(f"Oauth request with origin : {origin}")
     session['callback'] = request.args.get('callback') 
-    if 'HTTP_ORIGIN' in request.environ and not session.get('callback'):
-        session['callback'] = request.environ.get("HTTP_ORIGIN")
-
     discord = make_session(scope=scope.split(' '))
     authorization_url, state = discord.authorization_url(AUTHORIZATION_BASE_URL)
-    session['oauth2_state'] = state
+    session['oauth2_state'] = state + "_" + encodeB64(origin)
     return redirect(authorization_url)
 
+def encodeB64(base):
+    return b64encode(base.encode("ascii")).decode("ascii")
+
+def decodeB64(base):
+    return b64decode(base.encode("ascii")).decode("ascii")
 
 @app.route('/callback')
 def callback():
     if request.values.get('error'):
         return request.values['error']
-    discord = make_session(state=session.get('oauth2_state'))
+    meh = session.get('oauth2_state')
+    s,url = meh.split("_")
+    print(f"Oauth callback with redirect : {decodeB64(url)}")
+    discord = make_session(state=s)
     token = discord.fetch_token(
         TOKEN_URL,
         client_secret=OAUTH2_CLIENT_SECRET,
         authorization_response=request.url)
+
     session['oauth2_token'] = token
-    if("callback" in session):
-        return redirect(session["callback"])
-    else:
-        return redirect('https://dispos.pocot.fr')
-     
-
-
+    return redirect(decodeB64(url))
 
 @app.route('/me')
 def me():
