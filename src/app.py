@@ -44,7 +44,7 @@ def index():
     scope = request.args.get(
         'scope',
         'identify email guilds')
-    origin = request.headers.get("Origin") or "localhost"
+    origin = request.headers.get("Host") or "localhost"
     print(f"Oauth request with origin : {origin}")
     print(request.headers)
     session['callback'] = request.args.get('callback') 
