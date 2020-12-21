@@ -44,8 +44,9 @@ def index():
     scope = request.args.get(
         'scope',
         'identify email guilds')
-    origin = request.environ.get("HTTP_ORIGIN") or "localhost"
+    origin = request.headers.get("Origin") or "localhost"
     print(f"Oauth request with origin : {origin}")
+    print(request.headers)
     session['callback'] = request.args.get('callback') 
     discord = make_session(scope=scope.split(' '))
     authorization_url, state = discord.authorization_url(AUTHORIZATION_BASE_URL)
