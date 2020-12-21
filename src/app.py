@@ -60,30 +60,33 @@ def decodeB64(base):
 def callback():
     if request.values.get('error'):
         return request.values['error']
-    meh = session.get('oauth2_state')
-    s,url = meh.split("_")
+    s,url = session.get('oauth2_state').split("_")
     print(f"Oauth callback with redirect : {decodeB64(url)}")
     discord = make_session(state=s)
     token = discord.fetch_token(
         TOKEN_URL,
         client_secret=OAUTH2_CLIENT_SECRET,
         authorization_response=request.url)
-
     session['oauth2_token'] = token
     return redirect(decodeB64(url))
 
 @app.route('/me')
 def me():
+    """
+        Retrieve user infos
+    """
+    infos = {}
     discord = make_session(token=session.get('oauth2_token'))
     user = discord.get(API_BASE_URL + '/users/@me')
-    if(user.status_code != 200):
-        return (jsonify(user.json()), user.status_code)
-    user = user.json()
+    if(user.status_code == 200):
+        infos["user"] = user.json()
     guilds = discord.get(API_BASE_URL + '/users/@me/guilds')
-    if(guilds.status_code != 200):
-        return (jsonify(guilds.json()), guilds.status_code)
-    guilds = guilds.json()
-    return jsonify(user=user, guilds=guilds)
+    if(guilds.status_code == 200):
+         infos["guilds"] = guilds.json()
+    connections = discord.get(API_BASE_URL + '/users/@me/connections')
+    if(connections.status_code == 200):
+         infos["connections"] = connections.json()
+    return jsonify(infos)
 
 
 if __name__ == '__main__':
